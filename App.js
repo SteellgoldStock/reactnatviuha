@@ -44,6 +44,6 @@ export default function App() {
 
       <View style={{ flex: 2, backgroundColor: colors[2] }} />
       <View style={{ flex: 2, backgroundColor: colors[3] }} />
-    </View>
+    </View> 
   )
 }
