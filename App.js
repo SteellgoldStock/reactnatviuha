@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 export default function App() {
   const [colors, setColors] = useState(['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#000000' ])
 
-  const [num, setNum] = useState(0)
+  const [num, setNum] = useState(160)
 
   useEffect(() => {
     const interval = setInterval(() => {
