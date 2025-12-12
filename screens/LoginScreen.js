@@ -5,7 +5,6 @@ import { View } from "react-native";
 import { loginSchema } from "../schema/account";
 import { AntDesign } from "@react-native-vector-icons/ant-design";
 
-
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,8 +27,8 @@ const LoginScreen = ({ navigation }) => {
       setError(validated.error.issues[0].message);
     } else {
       navigation.navigate("Home", {
-        nom: "John",
-        prenom: "Doe"
+        firstName: validated.data.firstName ?? "John",
+        lastName: validated.data.lastName ?? "Doe"
       });
     }
   };
