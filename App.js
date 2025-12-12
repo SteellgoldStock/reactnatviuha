@@ -28,13 +28,20 @@ export default function App() {
       <View style={{ flex: 2, backgroundColor: colors[0] }} />
       <View style={{ flex: 2, backgroundColor: colors[1] }} />
 
-      <View style={{ flex: 1, flexDirection: "row", gap: 30, justifyContent: "center", alignItems: 'center' }}>
+      <View style={{ flex: 1, flexDirection: "row", gap: 10, justifyContent: "center", alignItems: 'center' }}>
+        <Button title='-100' onPress={() => setNum(num - 100)} />
         <Button title='-10' onPress={() => setNum(num - 10)} />
         <Button title='-1' onPress={() => setNum(num - 1)} />
-        <Text style={{ fontSize: 32 }}>{num}</Text>
+
+        <Text style={{ fontSize: 32 }} onPress={() => setNum(160)}>
+          {num}
+        </Text>
+
         <Button title='+1' onPress={() => setNum(num + 1)} />
         <Button title='+10' onPress={() => setNum(num + 10)} />
+        <Button title='+100' onPress={() => setNum(num + 100)} />
       </View>
+
       <View style={{ flex: 2, backgroundColor: colors[2] }} />
       <View style={{ flex: 2, backgroundColor: colors[3] }} />
     </View>
