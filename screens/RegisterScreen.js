@@ -1,16 +1,21 @@
 import React, { useState } from "react";
-import { TextInput, Button, Text } from "react-native-paper";
+import { TextInput, Button, Text, ActivityIndicator } from "react-native-paper";
 import { FormLayout } from "../components/centered-layout";
 import { AntDesign } from "@react-native-vector-icons/ant-design";
 import { registerSchema } from "../schema/account";
 import { View } from "react-native";
+import { useSQLiteContext } from "expo-sqlite";
+import { createUser, findUserByEmail } from "../services/database";
+import { hashPassword } from "../services/auth";
 
 const RegisterForm = ({ navigation }) => {
+  const db = useSQLiteContext();
+  
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [error, setError] = useState("");
   const [errors, setErrors] = useState({
@@ -20,7 +25,10 @@ const RegisterForm = ({ navigation }) => {
     password: "",
   });
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
+    setError("");
+    setErrors({ firstName: "", lastName: "", email: "", password: "" });
+
     const validated = registerSchema.safeParse({ firstName, lastName, email, password });
     if (!validated.success) {
       setErrors(validated.error.issues.reduce((acc, issue) => {
@@ -29,14 +37,38 @@ const RegisterForm = ({ navigation }) => {
       }, {}));
 
       setError(validated.error.issues[0].message);
-    } else {
-      console.log(validated.data);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const existingUser = await findUserByEmail(db, email.toLowerCase());
+      if (existingUser) {
+        setError("Un compte avec cet email existe deja");
+        setLoading(false);
+        return;
+      }
+
+      const hashedPassword = await hashPassword(password);
+      await createUser(db, {
+        firstName: validated.data.firstName,
+        lastName: validated.data.lastName,
+        email: validated.data.email.toLowerCase(),
+        password: hashedPassword,
+      });
+
       navigation.navigate("Home", {
         firstName: validated.data.firstName,
-        lastName: validated.data.lastName
+        lastName: validated.data.lastName,
       });
+    } catch (err) {
+      console.error("Registration error:", err);
+      setError("Erreur lors de l'inscription. Veuillez reessayer.");
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <FormLayout>
@@ -50,16 +82,18 @@ const RegisterForm = ({ navigation }) => {
             onChangeText={setFirstName}
             mode="flat"
             style={{ flex: 1 }}
-            error={errors.firstName}
+            error={!!errors.firstName}
+            disabled={loading}
           />
 
           <TextInput
-            label="Prénom"
+            label="Prenom"
             value={lastName}
             onChangeText={setLastName}
             mode="flat"
             style={{ flex: 1 }}
-            error={errors.lastName}
+            error={!!errors.lastName}
+            disabled={loading}
           />
         </View>
 
@@ -70,7 +104,8 @@ const RegisterForm = ({ navigation }) => {
           mode="flat"
           keyboardType="email-address"
           autoCapitalize="none"
-          error={errors.email}
+          error={!!errors.email}
+          disabled={loading}
         />
 
         <TextInput
@@ -79,11 +114,12 @@ const RegisterForm = ({ navigation }) => {
           onChangeText={setPassword}
           mode="flat"
           secureTextEntry
-          error={errors.password}
+          error={!!errors.password}
+          disabled={loading}
         />
         
-        <Button mode="contained" onPress={handleRegister}>
-          Inscription
+        <Button mode="contained" onPress={handleRegister} disabled={loading}>
+          {loading ? <ActivityIndicator color="#fff" size="small" /> : "Inscription"}
         </Button>
       </View>
 
